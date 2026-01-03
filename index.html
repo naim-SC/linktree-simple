@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naim • Connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #25D366;
+            --primary-light: #4ADF7D;
+            --primary-dark: #128C7E;
+            --surface: #FFFFFF;
+            --background: #FAFAFA;
+            --on-surface: #1A1A1A;
+            --on-surface-secondary: #666666;
+            --border: #E5E5E5;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 40px rgba(37, 211, 102, 0.2);
+            --radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #25D366;
+            --primary-light: #4ADF7D;
+            --primary-dark: #128C7E;
+            --surface: #1A1A1A;
+            --background: #0A0A0A;
+            --on-surface: #FFFFFF;
+            --on-surface-secondary: #A0A0A0;
+            --border: #333333;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 20px 40px rgba(37, 211, 102, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--on-surface);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(37, 211, 102, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(37, 211, 102, 0.03) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 24px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: var(--on-surface-secondary);
+            font-weight: 500;
+        }
+
+        .visitor-counter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--on-surface);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .visitor-counter:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .visitor-counter i {
+            color: var(--primary);
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.2s forwards;
+        }
+
+        .avatar-container {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 24px;
+            position: relative;
+            animation: avatarFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes avatarFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg); 
+            }
+            25% { 
+                transform: translateY(-10px) rotate(2deg); 
+            }
+            75% { 
+                transform: translateY(5px) rotate(-1deg); 
+            }
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            box-shadow: 
+                0 15px 50px rgba(37, 211, 102, 0.25),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+            filter: brightness(1.05) contrast(1.1);
+            transition: var(--transition);
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 20px 60px rgba(37, 211, 102, 0.35),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .status {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            background: #10B981;
+            border: 4px solid var(--surface);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px var(--primary);
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 3px var(--primary);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 0 0 0 5px var(--primary);
+            }
+        }
+
+        .profile h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .bio {
+            font-size: 16px;
+            color: var(--on-surface-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 36px;
+            margin-top: 24px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.3s forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat .number {
+            display: block;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat .label {
+            font-size: 12px;
+            color: var(--on-surface-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .time-section {
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.4s forwards;
+        }
+
+        .time-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .time-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .time-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .time-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .time-label {
+            font-size: 12px;
+            color: var(--on-surface-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .time-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-subvalue {
+            font-size: 12px;
+            color: var(--on-surface-secondary);
+            margin-top: 4px;
+        }
+
+        .date-display {
+            text-align: center;
+            font-size: 14px;
+            color: var(--on-surface-secondary);
+            padding: 15px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .date-display:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .date-display i {
+            color: var(--primary);
+        }
+
+        /* ===== PORTFOLIO SECTION ===== */
+        .portfolio-section {
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.5s forwards;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .portfolio-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-decoration: none;
+            color: var(--on-surface);
+            transition: var(--transition);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: portfolioAppear 0.6s ease-out forwards;
+        }
+
+        .portfolio-card:nth-child(1) { animation-delay: 0.6s; }
+        .portfolio-card:nth-child(2) { animation-delay: 0.7s; }
+
+        @keyframes portfolioAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(37, 211, 102, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .portfolio-card:hover::before {
+            opacity: 1;
+        }
+
+        .portfolio-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: white;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .portfolio-card:hover .portfolio-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .portfolio-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .portfolio-desc {
+            font-size: 13px;
+            color: var(--on-surface-secondary);
+            line-height: 1.4;
+            position: relative;
+            z-index: 1;
+        }
+
+        .portfolio-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FF4757;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+            animation: badgeFloat 3s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .whatsapp-section {
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.6s forwards;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.2);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--on-surface);
+        }
+
+        .whatsapp-channels {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .channel-card {
+            display: flex;
+            align-items: center;
+            padding: 24px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--on-surface);
+            transition: var(--transition);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideInRight 0.6s ease-out forwards;
+        }
+
+        .channel-card:nth-child(1) { animation-delay: 0.7s; }
+        .channel-card:nth-child(2) { animation-delay: 0.8s; }
+        .channel-card:nth-child(3) { animation-delay: 0.9s; }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .channel-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+            transform: scaleY(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .channel-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .channel-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .channel-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-right: 20px;
+            flex-shrink: 0;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .channel-card:hover .channel-icon {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .channel-info {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .channel-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--on-surface);
+        }
+
+        .channel-desc {
+            font-size: 14px;
+            color: var(--on-surface-secondary);
+            line-height: 1.4;
+        }
+
+        .channel-arrow {
+            color: var(--on-surface-secondary);
+            font-size: 16px;
+            opacity: 0.6;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .channel-card:hover .channel-arrow {
+            opacity: 1;
+            transform: translateX(8px);
+            color: var(--primary);
+        }
+
+        .channel-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FF4757;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+            animation: badgeFloat 3s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes badgeFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(5deg); }
+            75% { transform: translateY(5px) rotate(-5deg); }
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 1.0s forwards;
+        }
+
+        .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn.whatsapp {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+        }
+
+        .action-btn.portfolio {
+            background: var(--surface);
+            color: var(--on-surface);
+            border: 2px solid var(--border);
+        }
+
+        .action-btn.call {
+            background: var(--surface);
+            color: var(--on-surface);
+            border: 2px solid var(--border);
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .action-btn.whatsapp:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+
+        .action-btn.portfolio:hover,
+        .action-btn.call:hover {
+            border-color: var(--primary);
+        }
+
+        .social-section {
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 1.1s forwards;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .social-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--on-surface);
+            transition: var(--transition);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: socialAppear 0.6s ease-out forwards;
+        }
+
+        .social-card:nth-child(1) { animation-delay: 1.2s; }
+        .social-card:nth-child(2) { animation-delay: 1.3s; }
+        .social-card:nth-child(3) { animation-delay: 1.4s; }
+        .social-card:nth-child(4) { animation-delay: 1.5s; }
+        .social-card:nth-child(5) { animation-delay: 1.6s; }
+        .social-card:nth-child(6) { animation-delay: 1.7s; }
+
+        @keyframes socialAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .social-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: var(--primary);
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .social-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .social-card:hover::after {
+            height: 4px;
+        }
+
+        .social-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: white;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-card:hover .social-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .social-name {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-handle {
+            font-size: 13px;
+            color: var(--on-surface-secondary);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .whatsapp-color { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .instagram-color { background: linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C, #FD1D1D); }
+        .tiktok-color { background: #000000; }
+        .github-color { background: #333333; }
+        .youtube-color { background: #FF0000; }
+        .telegram-color { background: #0088CC; }
+        .portfolio-color { background: linear-gradient(135deg, #6A11CB, #2575FC); }
+        .web-color { background: linear-gradient(135deg, #11998e, #38ef7d); }
+
+        .floating-buttons {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 1000;
+        }
+
+        .floating-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 26px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            position: relative;
+            animation: floatingButton 8s ease-in-out infinite;
+        }
+
+        @keyframes floatingButton {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-12px) rotate(5deg); }
+            75% { transform: translateY(8px) rotate(-5deg); }
+        }
+
+        .floating-btn.whatsapp {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            animation-delay: 0.5s;
+        }
+        
+        .action-btn.instagram {
+    background: linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C, #FD1D1D);
+    color: white;
+    border: none;
+    box-shadow: 0 10px 30px rgba(225, 48, 108, 0.3);
+}
+
+.action-btn.instagram:hover {
+    background: linear-gradient(45deg, #FD1D1D, #E1306C, #C13584,   #833AB4, #405DE6);
+    box-shadow: 0 20px 40px rgba(225, 48, 108, 0.4);
+        }
+
+        .floating-btn.theme {
+            background: var(--surface);
+            color: var(--on-surface);
+            border: 2px solid var(--border);
+            animation-delay: 1s;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: 0 20px 50px rgba(37, 211, 102, 0.4);
+        }
+
+        .notification {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #FF4757;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+            animation: notificationPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes notificationPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            color: var(--on-surface-secondary);
+            font-size: 14px;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 1.8s forwards;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .footer-link {
+            color: var(--on-surface-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .footer-link:hover::after {
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .time-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .avatar-container {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .profile h1 {
+                font-size: 28px;
+            }
+            
+            .social-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .floating-buttons {
+                bottom: 24px;
+                right: 24px;
+            }
+            
+            .floating-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
+            }
+            
+            .visitor-counter {
+                top: 10px;
+                left: 10px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .avatar-container {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .profile h1 {
+                font-size: 24px;
+            }
+            
+            .bio {
+                font-size: 14px;
+            }
+            
+            .stats {
+                gap: 24px;
+            }
+            
+            .stat .number {
+                font-size: 22px;
+            }
+            
+            .time-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading tunggu bentar ya...</div>
+    </div>
+
+    <div class="visitor-counter">
+        <i class="fas fa-eye"></i>
+        <span id="visitor-count">0</span> visitors
+    </div>
+
+    <div class="floating-buttons">
+        <a href="https://wa.me/6282137487477" target="_blank" class="floating-btn whatsapp">
+            <i class="fab fa-whatsapp"></i>
+            <div class="notification">3</div>
+        </a>
+        <button class="floating-btn theme" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <div class="container">
+        <section class="profile">
+            <div class="avatar-container">
+                <img src="https://img1.pixhost.to/images/11346/679150147_primebot.jpg" alt="Nimzz" class="avatar">
+                <div class="status"></div>
+            </div>
+            
+            <h1>Nimzz</h1>
+            <p class="bio">Cuma anak umur 15 yang meningkatkan skill 😹</p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <span class="number">989</span>
+                    <span class="label">Followers</span>
+                </div>
+                <div class="stat">
+                    <span class="number">24/7</span>
+                    <span class="label">Online</span>
+                </div>
+                <div class="stat">
+                    <span class="number">100%</span>
+                    <span class="label">Response</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="time-section">
+            <div class="time-container">
+                <div class="time-card">
+                    <div class="time-label">Jam</div>
+                    <div class="time-value" id="current-time">00:00:00</div>
+                    <div class="time-subvalue" id="time-zone">WIB</div>
+                </div>
+                
+                <div class="time-card">
+                    <div class="time-label">Tanggal</div>
+                    <div class="time-value" id="current-date">01 Jan</div>
+                    <div class="time-subvalue" id="current-year-display">2024</div>
+                </div>
+                
+                <div class="time-card">
+                    <div class="time-label">Runtime</div>
+                    <div class="time-value" id="runtime">00:00:00</div>
+                    <div class="time-subvalue">Session</div>
+                </div>
+            </div>
+            
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="full-date">Hari, DD MMMM YYYY</span>
+            </div>
+        </section>
+
+        <section class="portfolio-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div>
+                    <h2 class="section-title">Portfolio & Projects</h2>
+                </div>
+            </div>
+            
+            <div class="portfolio-grid">
+                <a href="https://github.com/naim-SC" target="_blank" class="portfolio-card">
+                    <div class="portfolio-icon">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <div class="portfolio-name">GitHub Projects</div>
+                    <div class="portfolio-desc">Lihat semua project coding dan repository</div>
+                </a>
+                
+                <a href="https://nimzz-portfolio-web.vercel.app/" target="_blank" class="portfolio-card">
+                    <div class="portfolio-icon web-color">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="portfolio-name">Website Portfolio</div>
+                    <div class="portfolio-desc">Website portfolio Nimzz</div>
+                </a>
+            </div>
+        </section>
+
+<section class="whatsapp-section">
+    <div class="section-header">
+        <div class="section-icon">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+        <div>
+            <h2 class="section-title">WhatsApp Channels</h2>
+        </div>
+    </div>
+    
+    <div class="whatsapp-channels">
+        <a href="https://wa.me/6282137487477?text=Hi%20Nimzz!" target="_blank" class="channel-card">
+            <div class="channel-icon">
+                <i class="fas fa-comment"></i>
+            </div>
+            <div class="channel-info">
+                <div class="channel-name">Chat Personal</div>
+                <div class="channel-desc">Kirim pesan langsung ke WhatsApp saya</div>
+            </div>
+            <div class="channel-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="https://whatsapp.com/channel/0029VbBhZWdGJP8HlbGaE63Q" target="_blank" class="channel-card">
+            <div class="channel-icon">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="channel-info">
+                <div class="channel-name">My Saluran</div>
+                <div class="channel-desc">Ikuti saluran untuk mendapatkan preset dan informasi</div>
+            </div>
+            <div class="channel-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="https://chat.whatsapp.com/CFUuJO01FoNACyWSJD6qit" target="_blank" class="channel-card">
+            <div class="channel-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="channel-info">
+                <div class="channel-name">Group Marga CPI</div>
+                <div class="channel-desc">Komunitas Marga CPI official</div>
+            </div>
+            <div class="channel-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+    </div>
+</section>
+
+        <div class="quick-actions">
+            <a href="https://wa.me/6282137487477" target="_blank" class="action-btn whatsapp">
+                <i class="fab fa-whatsapp"></i>
+                WhatsApp Now
+            </a>
+            <a href="https://github.com/naim-SC" target="_blank" class="action-btn portfolio">
+                <i class="fab fa-github"></i>
+                GitHub Account
+            </a>
+              <a href="https://www.instagram.com/naim_developer?igsh=.   bWdpNGdhN28ycHdr" target="_blank" class="action-btn instagram">
+    <i class="fab fa-instagram"></i>
+    Instagram
+</a>
+        </div>
+
+        <section class="social-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h2 class="section-title">Social Media</h2>
+                </div>
+            </div>
+            
+            <div class="social-grid">
+                <a href="https://wa.me/6282137487477" target="_blank" class="social-card">
+                    <div class="social-icon whatsapp-color">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div class="social-name">WhatsApp</div>
+                    <div class="social-handle">Direct Chat</div>
+                </a>
+                
+                <a href="https://www.instagram.com/naim_developer" target="_blank" class="social-card">
+                    <div class="social-icon instagram-color">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <div class="social-name">Instagram</div>
+                    <div class="social-handle">Nimzz</div>
+                </a>
+                
+                <a href="https://tiktok.com/@nimzz_bocil_pokemon" target="_blank" class="social-card">
+                    <div class="social-icon tiktok-color">
+                        <i class="fab fa-tiktok"></i>
+                    </div>
+                    <div class="social-name">TikTok</div>
+                    <div class="social-handle">CPI Nimzz</div>
+                </a>
+                
+                <a href="https://github.com/naim-SC" target="_blank" class="social-card">
+                    <div class="social-icon github-color">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <div class="social-name">GitHub</div>
+                    <div class="social-handle">naim-SC</div>
+                </a>
+                
+                <a href="https://youtube.com/@NaimKupret" target="_blank" class="social-card">
+                    <div class="social-icon youtube-color">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <div class="social-name">YouTube</div>
+                    <div class="social-handle">Nimzz No Elite</div>
+                </a>
+                
+                <a href="https://t.me/Nimzz4" target="_blank" class="social-card">
+                    <div class="social-icon telegram-color">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <div class="social-name">Telegram</div>
+                    <div class="social-handle">Nimzz4</div>
+                </a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>© <span id="current-year">2024</span> Nimzz. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy</a>
+                <a href="#" class="footer-link">Terms</a>
+                <a href="mailto:nimzzgg828@gmail.com" class="footer-link">Contact</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        const body = document.body;
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemDark = prefersDark.matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            body.setAttribute('data-theme', 'dark');
+            themeIcon.className = 'fas fa-sun';
+            localStorage.setItem('theme', 'dark');
+        }
+
+        function disableDarkMode() {
+            body.removeAttribute('data-theme');
+            themeIcon.className = 'fas fa-moon';
+            localStorage.setItem('theme', 'light');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'dark') {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        });
+
+        prefersDark.addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    enableDarkMode();
+                } else {
+                    disableDarkMode();
+                }
+            }
+        });
+
+        function updateTime() {
+            const now = new Date();
+            
+            const timeOptions = { 
+                timeZone: 'Asia/Jakarta',
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            
+            const dateOptions = { 
+                timeZone: 'Asia/Jakarta',
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            
+            const timeFormatter = new Intl.DateTimeFormat('id-ID', timeOptions);
+            const dateFormatter = new Intl.DateTimeFormat('id-ID', dateOptions);
+            
+            const currentTime = timeFormatter.format(now);
+            const currentDate = dateFormatter.format(now);
+            
+            document.getElementById('current-time').textContent = currentTime;
+            document.getElementById('full-date').textContent = currentDate;
+            
+            const day = now.getDate();
+            const month = now.toLocaleDateString('id-ID', { month: 'short' });
+            document.getElementById('current-date').textContent = `${day} ${month}`;
+            
+            document.getElementById('current-year').textContent = now.getFullYear();
+            document.getElementById('current-year-display').textContent = now.getFullYear();
+            
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const timeZoneShort = timeZone.includes('Jakarta') ? 'WIB' : 
+                                 timeZone.includes('Makassar') ? 'WITA' : 
+                                 timeZone.includes('Jayapura') ? 'WIT' : 'GMT+7';
+            document.getElementById('time-zone').textContent = timeZoneShort;
+        }
+
+        let startTime = Date.now();
+        function updateRuntime() {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - startTime;
+            
+            const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+            
+            const runtimeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('runtime').textContent = runtimeString;
+        }
+
+        function updateVisitorCounter() {
+            let count = localStorage.getItem('visitorCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitor-count').textContent = count.toLocaleString();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(updateRuntime, 1000);
+            updateVisitorCounter();
+            
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            const interactiveElements = document.querySelectorAll('.channel-card, .social-card, .action-btn, .floating-btn, .time-card, .portfolio-card, .date-display');
+            interactiveElements.forEach(element => {
+                element.addEventListener('click', function(e) {
+                    if (this.tagName === 'BUTTON' || this.tagName === 'A' || this.classList.contains('time-card') || this.classList.contains('date-display') || this.classList.contains('portfolio-card')) {
+                        const ripple = document.createElement('span');
+                        const rect = this.getBoundingClientRect();
+                        const size = Math.max(rect.width, rect.height);
+                        const x = e.clientX - rect.left - size / 2;
+                        const y = e.clientY - rect.top - size / 2;
+                        
+                        ripple.style.cssText = `
+                            position: absolute;
+                            border-radius: 50%;
+                            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+                            transform: scale(0);
+                            animation: rippleEffect 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                            pointer-events: none;
+                            left: ${x}px;
+                            top: ${y}px;
+                            width: ${size}px;
+                            height: ${size}px;
+                            z-index: 0;
+                        `;
+                        
+                        this.style.position = 'relative';
+                        this.style.overflow = 'hidden';
+                        this.appendChild(ripple);
+                        
+                        setTimeout(() => ripple.remove(), 800);
+                    }
+                });
+            });
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes rippleEffect {
+                    0% {
+                        transform: scale(0);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            function updateNotification() {
+                const badge = document.querySelector('.notification');
+                const randomNum = Math.floor(Math.random() * 5) + 1;
+                
+                badge.textContent = randomNum;
+                badge.style.animation = 'none';
+                setTimeout(() => {
+                    badge.style.animation = 'notificationPulse 2s ease-in-out infinite';
+                }, 10);
+            }
+            
+            setInterval(updateNotification, 30000);
+            updateNotification();
+            
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    window.open('https://wa.me/6282137487477', '_blank');
+                }
+                
+                if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    themeToggle.click();
+                }
+                
+                if ((e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    window.location.href = 'tel:+6282137487477';
+                }
+                
+                if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    window.open('https://github.com/naim-SC', '_blank');
+                }
+            });
+            
+            const profileImg = new Image();
+            profileImg.src = 'https://img1.pixhost.to/images/11346/679150147_primebot.jpg';
+            profileImg.onload = () => {
+                document.querySelector('.avatar').style.opacity = '1';
+            };
+        });
+    </script>
+</body>
+</html>
